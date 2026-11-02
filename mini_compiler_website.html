@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini Compiler for Educational Programming</title>
+<style>
+:root{--bg:#fff;--fg:#1B2433;--card:#EEF2F8;--mut:#5C6B80;--navy:#12274B;--teal:#0FA3A3;--amber:#F2A33A;--red:#D9534F;--green:#3E8E41;--code:#10192B;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1626;--fg:#E6EDF7;--card:#17233A;--mut:#9FB0C8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1626;--fg:#E6EDF7;--card:#17233A;--mut:#9FB0C8;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Calibri,Arial,sans-serif}
+h1,h2,h3{font-family:Cambria,Georgia,serif;margin:0 0 .5em;line-height:1.2}
+h2{font-size:2rem;color:var(--navy)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) h2{color:#CADCFC}}
+:root[data-theme="dark"] h2{color:#CADCFC}
+section{max-width:1000px;margin:0 auto;padding:56px 20px}
+.hero{background:var(--navy);color:#fff;padding:72px 20px 64px}
+.hero>div{max-width:1000px;margin:0 auto}
+.hero h1{font-size:clamp(2rem,6vw,3.4rem);max-width:760px}
+.tag{color:var(--amber);font-weight:700;letter-spacing:.2em;font-size:.85rem}
+.team{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0}
+.team span{background:#1d3866;padding:6px 14px;border-radius:20px;font-size:.9rem}
+.btn{display:inline-block;background:var(--amber);color:#1B2433;font-weight:700;padding:10px 22px;border-radius:8px;text-decoration:none;border:0;font:inherit;font-weight:700;cursor:pointer}
+nav{position:sticky;top:0;z-index:5;background:var(--navy);padding:calc(8px + env(safe-area-inset-top,0px)) 20px 8px;display:flex;gap:18px;overflow-x:auto;white-space:nowrap}
+nav a{color:#CADCFC;text-decoration:none;font-size:.9rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:var(--card);border-radius:12px;padding:18px}
+.card h3{font-size:1.1rem;color:var(--navy)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .card h3{color:#CADCFC}}
+:root[data-theme="dark"] .card h3{color:#CADCFC}
+.num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--teal);color:#fff;align-items:center;justify-content:center;font-weight:700;margin-bottom:8px}
+code,pre,textarea{font-family:"Courier New",monospace}
+pre{background:var(--code);color:#E6EDF7;border-radius:10px;padding:14px;overflow-x:auto;margin:0;font-size:.85rem;line-height:1.5;white-space:pre}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.flow b{background:#3B6FB6;color:#fff;padding:12px 16px;border-radius:10px;font-weight:600}
+.flow b:first-child,.flow b:last-child{background:var(--navy)}
+.flow i{font-style:normal;color:var(--teal);font-size:1.4rem}
+.lab{display:grid;grid-template-columns:1fr 1.2fr;gap:16px}
+@media(max-width:760px){.lab{grid-template-columns:1fr}}
+textarea{width:100%;height:260px;background:var(--code);color:#E6EDF7;border:0;border-radius:10px;padding:14px;font-size:.9rem;resize:vertical}
+select{padding:8px;border-radius:8px;border:1px solid var(--mut);background:var(--card);color:var(--fg);font:inherit}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{padding:4px 12px;border-radius:14px;font-size:.8rem;font-weight:700;background:var(--card);color:var(--mut)}
+.chip.ok{background:var(--green);color:#fff}.chip.bad{background:var(--red);color:#fff}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.tabs button{border:0;background:var(--card);color:var(--fg);padding:6px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:.85rem}
+.tabs button.on{background:var(--navy);color:#fff}
+#panel{min-height:200px;max-height:300px;overflow:auto}
+.err{background:var(--red);color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:10px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--card)}
+th{background:var(--navy);color:#fff}
+.pass{color:var(--green);font-weight:700}.fail{color:var(--red);font-weight:700}
+.ec{border-radius:12px;padding:14px;background:var(--card);border:2px solid transparent}.ec.ok{border-color:var(--green)}.ec.bad{background:var(--red);color:#fff}.ec.bad h3{color:#fff}.ec h3{margin-bottom:.2em}
+#eb .btn{padding:6px 14px;font-size:.85rem}
+.big{font-size:3rem;font-weight:700;color:var(--teal);font-family:Cambria,serif}
+footer{background:var(--navy);color:#CADCFC;text-align:center;padding:28px 20px;font-size:.9rem}
+</style></head><body>
+<nav><a href="#about" data-go="about">About</a><a href="#system" data-go="system">System</a><a href="#language" data-go="language">Language</a><a href="#lab" data-go="lab">Try it</a><a href="#errors" data-go="errors">Errors</a><a href="#future" data-go="future">Future</a></nav>
+<header class="hero"><div>
+<div class="tag">REVIEW – 2  ·  TEAM 11</div>
+<h1>Mini Compiler for Educational Programming</h1>
+<p style="max-width:620px;font-size:1.15rem;color:#CADCFC">A small compiler that makes every phase visible, from source code to tokens, tree, intermediate code and output.</p>
+<div class="team"><span>2420030609 – Rajendra</span><span>2420030615 – Mallikarjun</span><span>2420030370 – Praveen</span><span>Guide: Dr. Sri Niraja</span></div>
+<a class="btn" href="#lab" data-go="lab">Try the compiler</a></div></header>
+
+<section id="about"><h2>Problem &amp; Objectives</h2>
+<p style="max-width:700px">Compiler concepts are hard to understand when taught only theoretically. Students never see tokens, trees or intermediate code.</p>
+<div class="grid">
+<div class="card"><span class="num">1</span><h3>Design</h3>A small educational programming language.</div>
+<div class="card"><span class="num">2</span><h3>Implement</h3>Lexical, syntax, semantic and intermediate-code phases.</div>
+<div class="card"><span class="num">3</span><h3>Explain</h3>Clear errors with line numbers and visible compilation steps.</div>
+<div class="card"><span class="num">4</span><h3>Teach</h3>Make compiler concepts easier for students.</div></div></section>
+
+<section id="system"><h2>Proposed System</h2>
+<div class="flow"><b>Source Code</b><i>→</i><b>Lexical Analysis</b><i>→</i><b>Syntax Analysis</b><i>→</i><b>Semantic Analysis</b><i>→</i><b>Intermediate Code</b><i>→</i><b>Execution</b></div>
+<p style="margin:18px 0 24px">The compiler validates and transforms the program at each stage. The Error Handler reports problems with line numbers.</p>
+<div class="grid">
+<div class="card"><h3>Lexical Analyzer</h3><code>lex()</code><br>Characters to tokens.</div>
+<div class="card"><h3>Parser</h3><code>Parser</code><br>Checks grammar, builds the AST.</div>
+<div class="card"><h3>Semantic Analyzer</h3><code>semantic()</code><br>Symbol table and valid operations.</div>
+<div class="card"><h3>Code Generator</h3><code>TACGen</code><br>Three-address code.</div>
+<div class="card"><h3>Interpreter</h3><code>run_tac()</code><br>Executes the generated code.</div>
+<div class="card"><h3>Error Handler</h3><code>CompilerError</code><br>Kind, line number, message.</div></div></section>
+
+<section id="language"><h2>Language Features &amp; Grammar</h2>
+<div class="lab"><div class="card"><ul style="margin:0;padding-left:20px;line-height:2">
+<li>Integer variables: <code>int x;</code> <code>x = 10;</code></li><li>Arithmetic: <code>+ - * /</code> and <code>( )</code></li>
+<li>Relational: <code>&lt; &gt; == != &lt;= &gt;=</code></li><li><code>IF ( ) { } ELSE { }</code></li><li><code>WHILE ( ) { }</code></li><li><code>PRINT expr;</code></li></ul></div>
+<pre>stmt  -&gt; INT ID [= expr] ;
+       | ID = expr ;
+       | PRINT expr ;
+       | IF (cond) block [ELSE block]
+       | WHILE (cond) block
+cond  -&gt; expr RELOP expr
+expr  -&gt; term {(+|-) term}
+term  -&gt; factor {(*|/) factor}
+factor-&gt; NUM | ID | (expr) | -factor</pre></div></section>
+
+<section id="lab"><h2>Try the Compiler</h2>
+<p>Edit the program and press Run. The same five phases from the Python project run here in your browser.</p>
+<div class="bar"><select id="ex"></select><button class="btn" id="run">Run ▶</button></div>
+<div class="lab"><textarea id="src" spellcheck="false" aria-label="Source code"></textarea>
+<div><div class="chips" id="chips"></div><div class="tabs" id="tabs"></div><div id="msg"></div><pre id="panel"></pre></div></div></section>
+
+<section id="errors"><h2>Educational Error Handling</h2>
+<p>Type any program or pick an example. The cards update as you type and show which phase caught the error, on which line, and why.</p>
+<div class="bar" id="eb"></div>
+<div class="lab"><div><textarea id="esrc" spellcheck="false" aria-label="Code to check for errors" style="height:200px"></textarea><pre id="eline" style="margin-top:10px;white-space:pre-wrap"></pre></div>
+<div class="grid" id="ecards" style="grid-template-columns:1fr 1fr"></div></div>
+<p>Students see exactly where and why compilation fails. Runtime errors such as division by zero and infinite loops are also caught.</p></section>
+
+<section id="future"><h2>Conclusion &amp; Future Scope</h2>
+<p>The project demonstrates the complete compiler workflow in a small, understandable language and connects compiler theory with practical implementation.</p>
+<div class="grid"><div class="card">AST visualization</div><div class="card">Syntax highlighting and code completion</div><div class="card">More data types and optimization</div><div class="card">VM or assembly code generation</div></div></section>
+<footer>Mini Compiler for Educational Programming · Team 11 · Thank you</footer>
+
+<script>
+class CE extends Error{constructor(k,l,m){super(m);this.k=k;this.l=l;this.m=m}}
+const KW=new Set(["INT","IF","ELSE","WHILE","PRINT"]),ONE={"+":"PLUS","-":"MINUS","*":"MUL","/":"DIV","<":"LT",">":"GT","=":"ASSIGN",";":"SEMI","(":"LPAREN",")":"RPAREN","{":"LBRACE","}":"RBRACE"},TWO={"==":"EQ","!=":"NEQ","<=":"LE",">=":"GE"};
+function lex(s){const t=[];let i=0,l=1;const n=s.length;
+while(i<n){const c=s[i];
+if(c==="\n"){l++;i++}else if(/\s/.test(c))i++;
+else if(c==="#"||s.startsWith("//",i)){while(i<n&&s[i]!=="\n")i++}
+else if(/\d/.test(c)){let j=i;while(j<n&&/\d/.test(s[j]))j++;if(j<n&&/[A-Za-z_]/.test(s[j]))throw new CE("Lexical",l,"Invalid identifier (cannot start with a digit)");t.push({t:"NUMBER",v:+s.slice(i,j),l});i=j}
+else if(/[A-Za-z_]/.test(c)){let j=i;while(j<n&&/\w/.test(s[j]))j++;const w=s.slice(i,j),u=w.toUpperCase();t.push(KW.has(u)?{t:u,v:u,l}:{t:"ID",v:w,l});i=j}
+else if(TWO[s.substr(i,2)]){t.push({t:TWO[s.substr(i,2)],v:s.substr(i,2),l});i+=2}
+else if(ONE[c]){t.push({t:ONE[c],v:c,l});i++}
+else throw new CE("Lexical",l,"Unknown character '"+c+"'")}
+t.push({t:"EOF",v:"EOF",l});return t}
+function parse(T){let p=0;const cur=()=>T[p],found=c=>c.t==="EOF"?"end of file":"'"+c.v+"'";
+const eat=(ty,w)=>{const c=cur();if(c.t!==ty){const pl=p?T[p-1].l:c.l;throw new CE("Syntax",(c.t==="EOF"||c.t==="RBRACE"||ty==="SEMI")?pl:c.l,"Expected "+(w||ty)+" but found "+found(c))}p++;return c};
+const factor=()=>{const c=cur();
+if(c.t==="NUMBER"){p++;return{k:"Num",l:c.l,v:c.v}}
+if(c.t==="ID"){p++;return{k:"Var",l:c.l,n:c.v}}
+if(c.t==="LPAREN"){p++;const e=expr();eat("RPAREN","')'");return e}
+if(c.t==="MINUS"){p++;return{k:"Bin",l:c.l,op:"-",a:{k:"Num",l:c.l,v:0},b:factor()}}
+throw new CE("Syntax",c.l,"Expected a number, variable or '(' but found "+found(c))};
+const bin=(sub,types)=>()=>{let n=sub();while(types.includes(cur().t)){const o=cur();p++;n={k:"Bin",l:o.l,op:o.v,a:n,b:sub()}}return n};
+const term=bin(factor,["MUL","DIV"]),expr=bin(term,["PLUS","MINUS"]);
+const cond=()=>{const a=expr();if(!["LT","GT","EQ","NEQ","LE","GE"].includes(cur().t))throw new CE("Syntax",cur().l,"Expected a relational operator (<, >, ==, !=, <=, >=)");const o=cur();p++;return{k:"Bin",l:o.l,op:o.v,a,b:expr()}};
+const block=()=>{eat("LBRACE","'{'");const b=[];while(!["RBRACE","EOF"].includes(cur().t))b.push(stmt());eat("RBRACE","'}'");return b};
+const stmt=()=>{const c=cur();
+if(c.t==="INT"){p++;const n=eat("ID","variable name");let init=null;if(cur().t==="ASSIGN"){p++;init=expr()}eat("SEMI","';'");return{k:"Decl",l:c.l,n:n.v,init}}
+if(c.t==="ID"){p++;eat("ASSIGN","'='");const e=expr();eat("SEMI","';'");return{k:"Assign",l:c.l,n:c.v,e}}
+if(c.t==="PRINT"){p++;const e=expr();eat("SEMI","';'");return{k:"Print",l:c.l,e}}
+if(c.t==="IF"){p++;eat("LPAREN","'('");const cd=cond();eat("RPAREN","')'");const th=block();let els=null;if(cur().t==="ELSE"){p++;els=block()}return{k:"If",l:c.l,cd,th,els}}
+if(c.t==="WHILE"){p++;eat("LPAREN","'('");const cd=cond();eat("RPAREN","')'");return{k:"While",l:c.l,cd,body:block()}}
+throw new CE("Syntax",c.l,"Unexpected "+found(c)+"; a statement was expected")};
+const b=[];while(cur().t!=="EOF")b.push(stmt());return{k:"Program",body:b}}
+function ast(n,d=0){const P="  ".repeat(d);const r=[];const k=n.k;
+if(k==="Program"){r.push("Program");n.body.forEach(s=>r.push(...ast(s,1)))}
+else if(k==="Decl"){r.push(P+"Declare "+n.n);if(n.init)r.push(...ast(n.init,d+1))}
+else if(k==="Assign"){r.push(P+"Assign "+n.n+" =",...ast(n.e,d+1))}
+else if(k==="Print"){r.push(P+"Print",...ast(n.e,d+1))}
+else if(k==="If"){r.push(P+"If",...ast(n.cd,d+1),P+"  Then");n.th.forEach(s=>r.push(...ast(s,d+2)));if(n.els){r.push(P+"  Else");n.els.forEach(s=>r.push(...ast(s,d+2)))}}
+else if(k==="While"){r.push(P+"While",...ast(n.cd,d+1),P+"  Do");n.body.forEach(s=>r.push(...ast(s,d+2)))}
+else if(k==="Bin"){r.push(P+n.op,...ast(n.a,d+1),...ast(n.b,d+1))}
+else r.push(P+(k==="Num"?n.v:n.n));return r}
+function semantic(pr){const tb={},log=[];
+const ce=e=>{if(e.k==="Var"){if(!(e.n in tb))throw new CE("Semantic",e.l,"Variable '"+e.n+"' is not declared");if(!tb[e.n])throw new CE("Semantic",e.l,"Variable '"+e.n+"' is used before it is given a value")}
+else if(e.k==="Bin"){ce(e.a);ce(e.b);if(e.op==="/"&&e.b.k==="Num"&&e.b.v===0)throw new CE("Semantic",e.l,"Division by zero")}};
+const ck=ss=>{for(const s of ss){
+if(s.k==="Decl"){if(s.n in tb)throw new CE("Semantic",s.l,"Variable '"+s.n+"' is already declared");if(s.init)ce(s.init);tb[s.n]=!!s.init;log.push("Line "+s.l+": declared '"+s.n+"' (int)")}
+else if(s.k==="Assign"){ce(s.e);if(!(s.n in tb))log.push("Line "+s.l+": '"+s.n+"' created by first assignment (int)");tb[s.n]=true}
+else if(s.k==="Print"){ce(s.e);log.push("Line "+s.l+": PRINT expression is valid")}
+else if(s.k==="If"){ce(s.cd);ck(s.th);if(s.els)ck(s.els);log.push("Line "+s.l+": IF condition is valid")}
+else{ce(s.cd);ck(s.body);log.push("Line "+s.l+": WHILE condition is valid")}}};
+ck(pr.body);return[tb,log]}
+function gen(pr){const c=[];let tn=0,ln=0;const T=()=>"t"+ ++tn,L=()=>"L"+ ++ln;
+const ex=e=>{if(e.k==="Num")return""+e.v;if(e.k==="Var")return e.n;const a=ex(e.a),b=ex(e.b),t=T();c.push(["bin",t,a,e.op,b]);return t};
+const st=s=>{if(s.k==="Decl"){if(s.init)c.push(["copy",s.n,ex(s.init)])}
+else if(s.k==="Assign")c.push(["copy",s.n,ex(s.e)]);
+else if(s.k==="Print")c.push(["print",ex(s.e)]);
+else if(s.k==="If"){const t=ex(s.cd),le=L(),ld=L();c.push(["iff",t,le]);s.th.forEach(st);if(s.els){c.push(["goto",ld],["label",le]);s.els.forEach(st);c.push(["label",ld])}else c.push(["label",le])}
+else{const lt=L(),ld=L();c.push(["label",lt]);const t=ex(s.cd);c.push(["iff",t,ld]);s.body.forEach(st);c.push(["goto",lt],["label",ld])}};
+pr.body.forEach(st);return c}
+const tac=i=>({bin:()=>i[1]+" = "+i[2]+" "+i[3]+" "+i[4],copy:()=>i[1]+" = "+i[2],print:()=>"PRINT "+i[1],iff:()=>"IF_FALSE "+i[1]+" GOTO "+i[2],goto:()=>"GOTO "+i[1],label:()=>i[1]+":"})[i[0]]();
+function exec(c){const lb={};c.forEach((x,i)=>{if(x[0]==="label")lb[x[1]]=i});const env={},out=[];let pc=0,st=0;
+const v=x=>/^-?\d+$/.test(x)?+x:env[x];
+while(pc<c.length){if(++st>100000)throw new CE("Runtime",0,"Program stopped: too many steps (possible infinite loop)");const i=c[pc];
+if(i[0]==="bin"){const a=v(i[2]),b=v(i[4]),o=i[3];let r;
+if(o==="+")r=a+b;else if(o==="-")r=a-b;else if(o==="*")r=a*b;else if(o==="/"){if(b===0)throw new CE("Runtime",0,"Division by zero");r=Math.trunc(a/b)}
+else r=+({"<":a<b,">":a>b,"==":a==b,"!=":a!=b,"<=":a<=b,">=":a>=b})[o];env[i[1]]=r}
+else if(i[0]==="copy")env[i[1]]=v(i[2]);else if(i[0]==="print")out.push(String(v(i[1])));
+else if(i[0]==="iff"){if(v(i[1])===0)pc=lb[i[2]]}else if(i[0]==="goto")pc=lb[i[1]];pc++}
+const fv={};for(const k in env)if(!/^t\d+$/.test(k))fv[k]=env[k];return{out,env:fv}}
+function pipe(src){const P={stage:0,tok:"",ast:"",sem:"",tac:"",out:"",outArr:[],err:null};
+try{const T=lex(src);P.tok=T.slice(0,-1).map(x=>"Line "+String(x.l).padEnd(3)+x.t.padEnd(8)+x.v).join("\n")+"\n→ "+(T.length-1)+" tokens";P.stage=1;
+const pr=parse(T);P.ast=ast(pr).join("\n");P.stage=2;
+const[tb,log]=semantic(pr);P.sem=log.join("\n")+"\nSymbol table: "+Object.keys(tb).map(k=>k+":int").join(", ")+"\n→ No semantic errors";P.stage=3;
+const g=gen(pr);P.tac=g.map(tac).join("\n");P.stage=4;
+const r=exec(g);P.outArr=r.out;P.out=(r.out.join("\n")||"(no output)")+"\n\nFinal variables: "+JSON.stringify(r.env);P.stage=5}
+catch(e){if(!(e instanceof CE))throw e;P.err=e}return P}
+const EX={"Sample 1 (from slides)":"x = 10;\ny = 20;\nz = x + y;\nPRINT z;","WHILE + IF / ELSE":"int i = 1;\nint sum = 0;\nWHILE (i <= 5) {\n    sum = sum + i;\n    i = i + 1;\n}\nPRINT sum;\nIF (sum > 10) {\n    PRINT 1;\n} ELSE {\n    PRINT 0;\n}","Operator precedence":"PRINT 2 + 3 * 4;","Error: undeclared variable":"x = 5;\ny = 7;\nz = x + y;\nPRINT a;","Error: missing semicolon":"x = 5;\ny = 3\nPRINT x + y;","Error: unknown symbol":"x = 5 $ 3;"};
+const $=id=>document.getElementById(id),TABS=[["tok","Tokens"],["ast","AST"],["sem","Semantic"],["tac","Intermediate code"],["out","Output"]],PH=["Lexical","Syntax","Semantic","Intermediate","Execution"];
+let cur="out",last=null;
+$("ex").innerHTML=Object.keys(EX).map(k=>"<option>"+k+"</option>").join("");
+$("ex").onchange=()=>{$("src").value=EX[$("ex").value];go()};
+$("tabs").innerHTML=TABS.map(t=>'<button data-t="'+t[0]+'">'+t[1]+"</button>").join("");
+$("tabs").onclick=e=>{if(e.target.dataset.t){cur=e.target.dataset.t;show()}};
+function show(){if(!last)return;document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===cur));
+$("panel").textContent=last[cur]||"— not reached —"}
+function go(){last=pipe($("src").value);const P=last;
+$("chips").innerHTML=PH.map((n,i)=>'<span class="chip '+(i<P.stage?"ok":(i===P.stage&&P.err?"bad":""))+'">'+n+"</span>").join("");
+$("msg").innerHTML=P.err?'<div class="err"></div>':"";
+if(P.err)$("msg").firstChild.textContent=P.err.k+" Error"+(P.err.l?" | Line "+P.err.l:"")+" — "+P.err.m;
+cur=P.err?TABS[Math.min(P.stage,4)][0]:"out";if(P.err&&P.stage===0)cur="tok";show()}
+$("run").onclick=go;
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const ES={"Lexical error":"x = 5 $ 3;","Syntax error":"x = 5;\ny = 3\nPRINT x + y;","Semantic error":"x = 5;\ny = 7;\nz = x + y;\nPRINT a;","Runtime error":"int i = 1;\nWHILE (i > 0) {\n    i = i + 1;\n}","Valid program":"x = 2;\nPRINT x * 21;"};
+const KIND=[["Lexical","Are all characters and words valid?"],["Syntax","Does the code follow the grammar?"],["Semantic","Are variables declared and operations valid?"],["Runtime","Does the program run safely?"]];
+function eupd(){const P=pipe($("esrc").value);const idx=P.err?KIND.findIndex(k=>k[0]===P.err.k):4;
+$("ecards").innerHTML=KIND.map((k,i)=>{const st=P.err?(i<idx?"ok":i===idx?"bad":""):"ok";const tx=(P.err&&i===idx)?P.err.k+" error"+(P.err.l?" at line "+P.err.l:"")+": "+P.err.m:(st==="ok"?"✓ Passed":"Not reached");return'<div class="ec '+st+'"><h3>'+k[0]+"</h3><small>"+k[1]+"</small><p><b>"+esc(tx)+"</b></p></div>"}).join("");
+const ln=$("esrc").value.split("\n");$("eline").textContent=P.err?(P.err.l?"Line "+P.err.l+": "+(ln[P.err.l-1]||"").trim():"Raised while the program was running"):"No errors. Output: "+(P.outArr.join(", ")||"(none)")}
+$("eb").innerHTML=Object.keys(ES).map(k=>'<button class="btn" data-e="'+k+'">'+k+"</button>").join("");
+$("eb").onclick=e=>{const k=e.target.dataset&&e.target.dataset.e;if(k){$("esrc").value=ES[k];eupd()}};
+$("esrc").oninput=eupd;
+document.querySelectorAll("[data-go]").forEach(a=>{a.onclick=e=>{e.preventDefault();$(a.dataset.go).scrollIntoView({behavior:"smooth"})}});
+$("src").value=EX["Sample 1 (from slides)"];$("esrc").value=ES["Semantic error"];go();eupd();
+</script></body></html>
